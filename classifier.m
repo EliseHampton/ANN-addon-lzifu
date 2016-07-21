@@ -1,20 +1,19 @@
 #! /Applications/Octave.app/Contents/Resources/bin/octave -qf
-%% ============= Welcome to TheMachine ================= %%
-% TheMachine is the neural net that is used by Finch.
-% Finch is a program to determine the number of components
-% that are most probable as output by lzifu (Ho et al 2015)
-% TheMachine uses 3 hidden layers and 10 nodes at each layer
+%% ============= Welcome to classifer ================= %%
+% classifier is the neural net that is used by LZClassify.
+% LZClassify is a program to determine the number of components
+% that are most probable as output by LZIFU (Ho et al 2016)
+% Tclassifier uses 2 hidden layers and 15 nodes at each layer
 % to calculate the probability that a certain spaxel should 
 % be fit with 1, 2, or 3 components.
-% TheMachine is writen in Octave and uses a sigmoid function.
+% classifier is writen in Octave and uses a sigmoid function.
 % The minimisation function was originally created by Carl Ramussen
 % and adapted by Andrew Ng for the online MOOC in Machine Learning.
 
-% TheMachine was writen by Elise Hampton at the Australian National
+% LZClassify was writen by Elise Hampton at the Australian National
 % University as a part of her PhD (2013-2016) for the SAMI and S7 
 % surveys.
 % Contact Details: elise.hampton@anu.edu.au
-% PhD supervisor: Prof. Lisa Kewley
 
 %% ================== Update Log ===================== %%
 % Dec 2014 - Testing of ClockWorkv1 completed (83% accuracy)
@@ -25,12 +24,11 @@
 % to test or train using TheMachine
 % 13th Jan 2015 - now outputs predicted values to text files as
 % lists
-% 19th Jan 2015 - Takes in traina nd test as command line arguments
+% 19th Jan 2015 - Takes in train and test as command line arguments
+% 21st Jul 2016 - Renamed to be better identified when published
 
 %% Initialization
 clear ; close all; clc
-%train = 1;
-%testt = 1;
 arg_list = argv();
 train = double(arg_list{4});
 testt = double(arg_list{5});
@@ -65,19 +63,15 @@ end
 %% Input layers and hidden layers sizes
 
 input_layer_size = size(X2,2);
-hidden_layer_size = 15;%5;  % 15 hidden units
-num_labels = 3%5;%5;          % 5 labels, from 1 to 5   
-                         % 4 is 0 components, 5 for bad fits, the rest make sense
+hidden_layer_size = 15;  % 15 hidden units
+num_labels = 3;          % 3 labels, from 1 to 3   
+                        
 
-%fprintf('Program paused. Press enter to continue.\n');
-%pause;
-
-%% initialise the theta values for the 3 hidden layers
+%% initialise the theta values for the 3 hidden layers if in training mode
 if train == 49
     
     initial_Theta1 = randInitializeWeights(input_layer_size, hidden_layer_size);
-    initial_Theta2 = randInitializeWeights(hidden_layer_size, ...
-                                       hidden_layer_size);
+    initial_Theta2 = randInitializeWeights(hidden_layer_size, hidden_layer_size);
     initial_Theta3 = randInitializeWeights(hidden_layer_size, num_labels);
 
     % Unroll parameters
@@ -85,13 +79,12 @@ if train == 49
 
     fprintf('\nTraining Neural Network... \n')
 
+% the number of iterations can be changed here 50,000 is a decent ball park
+% takes about 20-30 minutes
     options = optimset('MaxIter', 50000);
-    %options = optimset('MaxIter', 1000);
 
-    %  You should also try different values of lambda
+    %  lambda can be changed here - for SAMI and S7 lambda - 0.3 is best
     lambda = 0.3;
-    %lambda = 1;
-    %lambda = 0.03;
 
     % Create "short hand" for the cost function to be minimized
     costFunction = @(p) nnCostFunction(p, ...
@@ -99,23 +92,19 @@ if train == 49
                                    hidden_layer_size, ...
                                    num_labels, X2, y2, lambda);
 
-    % Now, costFunction is a function that takes in only one argument (the
-    % neural network parameters)
+    % Training happens here
     [nn_params, cost] = fmincg(costFunction, initial_nn_params, options);
 
-    % Obtain Theta1 and Theta2 back from nn_params
+    % Obtain Theta1, Theta2, and Theta3 back from the training
     Theta1 = reshape(nn_params(1:hidden_layer_size * (input_layer_size + 1)), ...
                      hidden_layer_size, (input_layer_size + 1));
 
-    Theta2 = reshape(nn_params((1 + (hidden_layer_size * (input_layer_size + 1))):(((hidden_layer_size * (input_layer_size + 1)) + (hidden_layer_size*(1+hidden_layer_size))))), ...
-                     hidden_layer_size, (hidden_layer_size + 1));
+    Theta2 = reshape(nn_params((1 + (hidden_layer_size * (input_layer_size + 1))):(((hidden_layer_size * (input_layer_size + 1)) + (hidden_layer_size*(1+hidden_layer_size))))), hidden_layer_size, (hidden_layer_size + 1));
 
     Theta3 = reshape(nn_params((1 + ((hidden_layer_size * (input_layer_size + 1)) + (hidden_layer_size*(1+hidden_layer_size)))):end), ...
                      num_labels, (hidden_layer_size + 1));
 
-    fprintf('Program paused. Press enter to continue.\n');
-    %pause;
-    
+    % Save the Thetas into files that can be accessed later for running
     save theta1.mat Theta1
     save theta2.mat Theta2
     save theta3.mat Theta3
@@ -147,7 +136,7 @@ if testt == 49
     %print -deps trainexampls.eps;
     pause;
     
-    % Test how the nueral net goes with different regularisation parameters
+    % Test how the nueral net goes with different regularisation parameters, lambda
     [lambda_vec, error_train, error_val, error_test] = ...
     validationCurve(X2, y2, Xval, yval, Xtest,ytest,initial_nn_params, ...
                                    input_layer_size, ...
@@ -174,7 +163,7 @@ if train == 48
     
 end
 
-
+% calculate the predictions here
 [pred1 h3] = predict(Theta1, Theta2, Theta3, X2);
 
 save -ascii pred1.txt pred1
@@ -229,4 +218,4 @@ if train == 49
 end
     
 
-fprintf('\nMachine done!\n');
+fprintf('\nclassifier done!\n');
