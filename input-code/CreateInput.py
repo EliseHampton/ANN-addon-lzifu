@@ -1,9 +1,9 @@
 #python2.7
 
-#======================== Welcome to CreateInput_SAMI ==========================#
+#======================== Welcome to CreateInput ==========================#
 # CreateInput is a python based program for creating
-# the input files for theMachine from the 
-# output of lzifu (Ho et al. 2014)
+# the input files for classifier from the 
+# output of LZIFU (Ho et al. 2016)
 # This is not a pretty program
 #==========================================================================#
 
@@ -13,8 +13,7 @@
 # Research School of Astronomy and Astrophysics
 # CreateInput written for the S7 collaboration
 # (PI: A/Prof Michael Dopita)
-# Supervisor: Prof. Lisa Kewley
-# December 2014
+# Last update: July 2016
 #==========================================================================#
 
 #================================ Updates =================================#
